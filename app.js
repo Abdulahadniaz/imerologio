@@ -7,16 +7,16 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.get("/events", async (req, res) => {
-  try {
-    const auth = await authorize();
-    const events = await listEvents(auth);
-    res.json(events);
-  } catch (error) {
-    console.error("Error fetching events:", error);
-    res.status(500).json({ error: "Failed to fetch events" });
-  }
-});
+// app.get("/events", async (req, res) => {
+//   try {
+//     const auth = await authorize();
+//     const events = await listEvents(auth);
+//     res.json(events);
+//   } catch (error) {
+//     console.error("Error fetching events:", error);
+//     res.status(500).json({ error: "Failed to fetch events" });
+//   }
+// });
 
 // app.post("/create-event", async (req, res) => {
 //   const event = {
