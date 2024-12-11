@@ -1,16 +1,16 @@
-const fs = require('fs').promises;
-const path = require('path');
-const process = require('process');
-const {authenticate} = require('@google-cloud/local-auth');
-const {google} = require('googleapis');
+const fs = require("fs").promises;
+const path = require("path");
+const process = require("process");
+const { authenticate } = require("@google-cloud/local-auth");
+const { google } = require("googleapis");
 
 // If modifying these scopes, delete token.json.
-const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
+const SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"];
 // The file token.json stores the user's access and refresh tokens, and is
 // created automatically when the authorization flow completes for the first
 // time.
-const TOKEN_PATH = path.join(process.cwd(), 'token.json');
-const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
+const TOKEN_PATH = path.join(process.cwd(), "token.json");
+const CREDENTIALS_PATH = path.join(process.cwd(), "credentials.json");
 
 /**
  * Reads previously authorized credentials from the save file.
@@ -38,7 +38,7 @@ async function saveCredentials(client) {
   const keys = JSON.parse(content);
   const key = keys.installed || keys.web;
   const payload = JSON.stringify({
-    type: 'authorized_user',
+    type: "authorized_user",
     client_id: key.client_id,
     client_secret: key.client_secret,
     refresh_token: client.credentials.refresh_token,
@@ -71,20 +71,20 @@ async function authorize() {
  * @return {Promise<Array>} List of events
  */
 async function listEvents(auth) {
-  const calendar = google.calendar({version: 'v3', auth});
+  const calendar = google.calendar({ version: "v3", auth });
   const res = await calendar.events.list({
-    calendarId: 'primary',
+    calendarId: "primary",
     timeMin: new Date().toISOString(),
     maxResults: 10,
     singleEvents: true,
-    orderBy: 'startTime',
+    orderBy: "startTime",
   });
   const events = res.data.items;
   if (!events || events.length === 0) {
-    console.log('No upcoming events found.');
+    console.log("No upcoming events found.");
     return [];
   }
-  console.log('Upcoming 10 events:');
+  console.log("Upcoming events:");
   events.forEach((event, i) => {
     const start = event.start.dateTime || event.start.date;
     console.log(`${start} - ${event.summary}`);
@@ -92,7 +92,28 @@ async function listEvents(auth) {
   return events;
 }
 
+async function createEvent(event, auth) {
+  const calendar = google.calendar({ version: "v3", auth });
+  calendar.events.insert(
+    {
+      auth: auth,
+      calendarId: "primary",
+      resource: event,
+    },
+    function (err, event) {
+      if (err) {
+        console.log(
+          "There was an error contacting the Calendar service: " + err
+        );
+        return;
+      }
+      console.log("Event created: %s", event.htmlLink);
+    }
+  );
+}
+
 module.exports = {
   authorize,
-  listEvents
+  listEvents,
+  createEvent,
 };
